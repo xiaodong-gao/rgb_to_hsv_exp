@@ -12,7 +12,7 @@ MImageAugmentation::~MImageAugmentation()
 }
 
 
-void MImageAugmentation::process_image(const QString &process_image_path, std::vector<float> vec_exp,std::vector<QString> vec_sub_folder_path)
+void MImageAugmentation::process_image(const QString &process_image_path, std::vector<float> vec_exp,std::vector<QString> vec_sub_folder_path, int min_threshold_value, int max_threshold_value)
 {
     // 检查路径是否存在
     QDir dir(process_image_path);
@@ -39,14 +39,15 @@ void MImageAugmentation::process_image(const QString &process_image_path, std::v
                 //int brightness = 10; // 可以调整为正值增加亮度，负值降低亮度
 
                 // 创建一个空白矩阵，与原始图像尺寸相同
-                cv::Mat brightenedImage;
+                //cv::Mat brightenedImage;
                 // 修改亮度，image + brightness
-                src_img.convertTo(brightenedImage, -1, 1, vec_exp[j]);
+                //src_img.convertTo(brightenedImage, -1, 1, vec_exp[j]);
+                modify_bright(src_img, min_threshold_value, max_threshold_value, vec_exp[j]);
                 QFileInfo fileInfo(filePath);
                 QString fileName = fileInfo.fileName();
                 QStringList list = fileName.split('.');
                 QString save_result_image_path = vec_sub_folder_path[j] + "/" + list[0] + "." + list[1];
-                cv::imwrite(save_result_image_path.toStdString().c_str(), brightenedImage);
+                cv::imwrite(save_result_image_path.toStdString().c_str(), src_img);
                 QString str = "process Brightness value is " + QString::number(vec_exp[j]) + " save result is " + save_result_image_path;
                 emit send_msg_mainwindow(str);
             }
@@ -54,22 +55,38 @@ void MImageAugmentation::process_image(const QString &process_image_path, std::v
     }
 }
 
-void MImageAugmentation::extrct_blob(const cv::Mat &img){
-    //cv::Mat img = cv::imread("image.jpg", cv::IMREAD_GRAYSCALE);
-    cv::Mat binaryImg;
-    cv::threshold(img, binaryImg, 128, 255, cv::THRESH_BINARY);
+void MImageAugmentation::modify_bright(cv::Mat& src_img, int min_threshold_value, int max_threshold_value, int bright_value) {
+    cv::Mat gray;
+    if (src_img.channels() == 3) {
+        cv::cvtColor(src_img, gray, cv::COLOR_BGR2GRAY);
+    }
+    else {
+        gray = src_img;
+    }
 
-    std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(binaryImg, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-
-    for (size_t i = 0; i < contours.size(); i++) {
-        double area = cv::contourArea(contours[i]);
-        if (area > 100) {
-            cv::drawContours(img, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
+    cv::Mat binary;
+    cv::threshold(gray, binary, min_threshold_value, max_threshold_value, cv::THRESH_BINARY);
+    // 3. 分割连通区域 提取连通区域 增加前景区域的亮度
+    cv::Mat labels;
+    int num_labels = cv::connectedComponents(binary, labels, 8, CV_32S);
+    for (int label = 1; label < num_labels; label++) {
+        for (int row = 0; row < labels.rows; ++row) {
+            for (int col = 0; col < labels.cols; ++col) {
+                if (labels.at<int>(row, col) == label) {
+                    cv::Vec3b pixel = src_img.at<cv::Vec3b>(row, col);
+                    // 分别处理 BGR 通道，增加亮度
+                    for (int c = 0; c < src_img.channels(); c++) {
+                        int new_value = pixel[c] + bright_value;
+                        // 限制新值在 0-255 之间
+                        new_value = std::min(std::max(new_value, 0), 255);
+                        src_img.at<cv::Vec3b>(row, col)[c] = new_value;
+                    }
+                }
+            }
         }
     }
 
-    cv::imshow("Blob Detection", img);
-    cv::waitKey(0);
+
 }
+
 

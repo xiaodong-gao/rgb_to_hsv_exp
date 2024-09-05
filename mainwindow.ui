@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
-    <height>419</height>
+    <width>607</width>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,6 +74,34 @@
        </layout>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="labelMinThreshold">
+          <property name="text">
+           <string>min threshold</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditMinThreshold"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>max threshold</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditMaxThreshold"/>
+        </item>
+       </layout>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <spacer name="horizontalSpacer">
@@ -109,12 +137,24 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>603</width>
+     <width>607</width>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu_tool">
+    <property name="title">
+     <string>&amp;tool</string>
+    </property>
+    <addaction name="action_settings_threshold"/>
+   </widget>
+   <addaction name="menu_tool"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_settings_threshold">
+   <property name="text">
+    <string>settings</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

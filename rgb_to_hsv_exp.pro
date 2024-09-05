@@ -32,15 +32,18 @@ win32 {
 
 SOURCES += \
     MImageAugmentation.cpp \
+    ThresholdDlg.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     MImageAugmentation.h \
+    ThresholdDlg.h \
     mainwindow.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    thresholddlg.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

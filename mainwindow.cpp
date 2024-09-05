@@ -10,7 +10,11 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowIcon(QIcon("./Icon/Brightness.png"));
     setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
     image_augmentation_ = std::make_unique<MImageAugmentation>();
-    QObject::connect(image_augmentation_.get(), &MImageAugmentation::send_msg_mainwindow, this, &MainWindow::recv_msg_from_MImageAugmentation);
+    min_threshold_value = 100;
+    max_threshold_value = 255;
+    ui->lineEditMinThreshold->setText(QString::number(min_threshold_value));
+    ui->lineEditMaxThreshold->setText(QString::number(max_threshold_value));
+    QObject::connect(image_augmentation_.get(), &MImageAugmentation::send_msg_mainwindow, this, &MainWindow::recv_msg_from_MImageAugmentation);   
 }
 
 MainWindow::~MainWindow()
@@ -109,7 +113,6 @@ QString MainWindow::new_sub_folder_path(QString root_folder_path, QString sub_fl
 
 void MainWindow::on_btnRun_clicked()
 {
-
     ui->listWidget->addItem(tr("run process"));
     //parse distributing Data
     QString text = ui->lineEditExposureValue->text();
@@ -125,8 +128,10 @@ void MainWindow::on_btnRun_clicked()
     for (int i = 0; i < vec_exp_value_.size(); i++) {
         vec_sub_folder_path_.push_back(new_sub_folder_path(root_path, QString::number(vec_exp_value_[i])));
     }
-    image_augmentation_->process_image(root_folder_path_,vec_exp_value_, vec_sub_folder_path_);
-   
+
+    int min_threshold_value = ui->lineEditMinThreshold->text().toInt();;
+    int max_threshold_value = ui->lineEditMaxThreshold->text().toInt();
+    image_augmentation_->process_image(root_folder_path_,vec_exp_value_, vec_sub_folder_path_, min_threshold_value, max_threshold_value); 
 }
 
 void MainWindow::recv_msg_from_MImageAugmentation(const QString& str) {
@@ -134,10 +139,18 @@ void MainWindow::recv_msg_from_MImageAugmentation(const QString& str) {
     ui->listWidget->update();
 }
 
-
-
-
-void MainWindow::on_lineEditResultFolderPath_textEdited(const QString &arg1)
+void MainWindow::on_lineEditMinThreshold_textChanged(const QString &text)
 {
+    min_threshold_value = text.toInt();
+}
 
+void MainWindow::on_lineEditMaxThreshold_textEdited(const QString &text)
+{
+    max_threshold_value = text.toInt();
+}
+
+void MainWindow::on_action_settings_threshold_triggered()
+{
+    ThresholdDlg dlg(this);
+    dlg.exec();
 }
